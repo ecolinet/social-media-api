@@ -1,0 +1,721 @@
+openapi: 3.0.3
+info:
+  title: Social Media Profiles API
+  description: |
+    A Laravel API that allows authenticated users to manage their social media profiles using OAuth 2 authentication via Laravel Passport.
+    
+    ## Features
+    - OAuth 2 Authentication using Laravel Passport
+    - User Registration & Login with JWT tokens
+    - Social Media Profile Management (CRUD operations)
+    - Multiple Platform Support (Twitter, Facebook, Instagram, LinkedIn, YouTube, TikTok, etc.)
+    - Profile Grouping by Platform
+    - Profile Synchronization endpoints
+    
+    ## Demo User
+    For testing purposes, a demo user is available:
+    - **Email**: demo@example.com
+    - **Password**: password123
+    
+    ## Interactive Demo
+    Visit `/demo.html` for an interactive web interface to test the API.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000/api
+    description: Development server
+  - url: https://work-1-yxvpfdopsjxunxzp.prod-runtime.all-hands.dev/api
+    description: Demo server
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health Check
+      summary: Check API health status
+      description: Returns the current health status of the API
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "API is running"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-06-13T04:03:32.413322Z"
+
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "password123"
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticate user and return access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "demo@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /user:
+    get:
+      tags:
+        - Authentication
+      summary: Get authenticated user profile
+      description: Returns the profile of the currently authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Revoke the user's access token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User logged out successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /social-media-profiles:
+    get:
+      tags:
+        - Social Media Profiles
+      summary: Get all user's social media profiles
+      description: Returns all social media profiles for the authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: platform
+          in: query
+          description: Filter by platform
+          required: false
+          schema:
+            type: string
+            enum: [facebook, twitter, instagram, linkedin, youtube, tiktok, snapchat, pinterest]
+        - name: active
+          in: query
+          description: Filter by active status
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Profiles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      profiles:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SocialMediaProfile'
+                      total:
+                        type: integer
+                        example: 4
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Social Media Profiles
+      summary: Create a new social media profile
+      description: Create a new social media profile for the authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialMediaProfileInput'
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Social media profile created successfully"
+                  data:
+                    type: object
+                    properties:
+                      profile:
+                        $ref: '#/components/schemas/SocialMediaProfile'
+        '409':
+          description: Profile for this platform already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /social-media-profiles/{id}:
+    get:
+      tags:
+        - Social Media Profiles
+      summary: Get a specific social media profile
+      description: Returns a specific social media profile by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Profile ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      profile:
+                        $ref: '#/components/schemas/SocialMediaProfile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Social Media Profiles
+      summary: Update a social media profile
+      description: Update an existing social media profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Profile ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialMediaProfileInput'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Social media profile updated successfully"
+                  data:
+                    type: object
+                    properties:
+                      profile:
+                        $ref: '#/components/schemas/SocialMediaProfile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags:
+        - Social Media Profiles
+      summary: Delete a social media profile
+      description: Delete an existing social media profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Profile ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Social media profile deleted successfully"
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /social-media-profiles-by-platform:
+    get:
+      tags:
+        - Social Media Profiles
+      summary: Get profiles grouped by platform
+      description: Returns all social media profiles grouped by platform
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profiles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      profiles_by_platform:
+                        type: object
+                        additionalProperties:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/SocialMediaProfile'
+                        example:
+                          twitter:
+                            - $ref: '#/components/schemas/SocialMediaProfile'
+                          linkedin:
+                            - $ref: '#/components/schemas/SocialMediaProfile'
+                      platforms:
+                        type: array
+                        items:
+                          type: string
+                        example: ["twitter", "linkedin", "instagram"]
+                      total_platforms:
+                        type: integer
+                        example: 3
+
+  /social-media-profiles/{id}/sync:
+    post:
+      tags:
+        - Social Media Profiles
+      summary: Sync profile data
+      description: Sync profile data with external social media APIs (placeholder endpoint)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Profile ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile synced successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Profile sync completed successfully"
+                  data:
+                    type: object
+                    properties:
+                      profile:
+                        $ref: '#/components/schemas/SocialMediaProfile'
+                      sync_status:
+                        type: string
+                        example: "completed"
+                      last_synced_at:
+                        type: string
+                        format: date-time
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Use the access token obtained from the login endpoint.
+        Example: `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...`
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Demo User"
+        email:
+          type: string
+          format: email
+          example: "demo@example.com"
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-06-13T03:58:14.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-06-13T03:58:14.000000Z"
+
+    SocialMediaProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        platform:
+          type: string
+          enum: [facebook, twitter, instagram, linkedin, youtube, tiktok, snapchat, pinterest]
+          example: "twitter"
+        platform_user_id:
+          type: string
+          example: "123456789"
+        username:
+          type: string
+          example: "demo_user"
+        display_name:
+          type: string
+          example: "Demo User"
+        profile_url:
+          type: string
+          format: uri
+          example: "https://twitter.com/demo_user"
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://pbs.twimg.com/profile_images/demo.jpg"
+        bio:
+          type: string
+          nullable: true
+          example: "Software developer and tech enthusiast"
+        additional_data:
+          type: object
+          nullable: true
+          example:
+            followers_count: 1250
+            following_count: 890
+            tweets_count: 3456
+            verified: false
+        is_active:
+          type: boolean
+          example: true
+        last_synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-06-13T03:58:14.000000Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-06-13T03:58:14.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-06-13T03:58:14.000000Z"
+
+    SocialMediaProfileInput:
+      type: object
+      required:
+        - platform
+        - platform_user_id
+        - username
+        - display_name
+      properties:
+        platform:
+          type: string
+          enum: [facebook, twitter, instagram, linkedin, youtube, tiktok, snapchat, pinterest]
+          example: "youtube"
+        platform_user_id:
+          type: string
+          example: "UC123456789"
+        username:
+          type: string
+          example: "demo_channel"
+        display_name:
+          type: string
+          example: "Demo Channel"
+        profile_url:
+          type: string
+          format: uri
+          example: "https://youtube.com/c/demo_channel"
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://yt3.ggpht.com/demo_avatar.jpg"
+        bio:
+          type: string
+          nullable: true
+          example: "Tech tutorials and reviews"
+        additional_data:
+          type: object
+          nullable: true
+          example:
+            subscribers_count: 15000
+            videos_count: 120
+            views_count: 500000
+        is_active:
+          type: boolean
+          default: true
+          example: true
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "User logged in successfully"
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            access_token:
+              type: string
+              example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+            token_type:
+              type: string
+              example: "Bearer"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error message"
+
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation errors"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email: ["The email field is required."]
+            password: ["The password field is required."]
+
+tags:
+  - name: Health Check
+    description: API health monitoring endpoints
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Social Media Profiles
+    description: Social media profile management operations
+
+externalDocs:
+  description: Find more info in the project documentation
+  url: https://github.com/your-repo/social-media-api
