@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Manager</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Social Media Manager</span>
+                </div>
+                <div class="nav-menu">
+                    <button class="nav-item" data-page="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-page="profiles">
+                        <i class="fas fa-users"></i>
+                        <span>Profiles</span>
+                    </button>
+                    <button class="nav-item" data-page="analytics">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </button>
+                    <button class="nav-item" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                </div>
+                <div class="nav-user">
+                    <div class="user-info" id="userInfo" style="display: none;">
+                        <span id="userName"></span>
+                        <button class="btn btn-outline" onclick="authManager.logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" id="loginBtn" onclick="authManager.showLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Login Modal -->
+            <div id="loginModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Login to Your Account</h2>
+                        <button class="modal-close" onclick="authManager.hideLoginModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="demo@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" value="password123" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    Login
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="authManager.hideLoginModal()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                        <div class="demo-info">
+                            <p><strong>Demo Credentials:</strong></p>
+                            <p>Email: demo@example.com</p>
+                            <p>Password: password123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome to your Social Media Manager</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalProfiles">0</h3>
+                            <p>Total Profiles</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="activeProfiles">0</h3>
+                            <p>Active Profiles</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="platformCount">0</h3>
+                            <p>Platforms</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-sync"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="lastSync">Never</h3>
+                            <p>Last Sync</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="recent-profiles">
+                        <h2>Recent Profiles</h2>
+                        <div id="recentProfilesList" class="profiles-grid">
+                            <!-- Recent profiles will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <h2>Quick Actions</h2>
+                        <div class="actions-grid">
+                            <button class="action-card" onclick="pageManager.showPage('profiles')">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Profile</span>
+                            </button>
+                            <button class="action-card" onclick="profileManager.syncAllProfiles()">
+                                <i class="fas fa-sync"></i>
+                                <span>Sync All</span>
+                            </button>
+                            <button class="action-card" onclick="pageManager.showPage('analytics')">
+                                <i class="fas fa-chart-line"></i>
+                                <span>View Analytics</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profiles Page -->
+            <div id="profilesPage" class="page">
+                <div class="page-header">
+                    <h1>Social Media Profiles</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="profileManager.showAddModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Profile
+                        </button>
+                        <button class="btn btn-outline" onclick="profileManager.refreshProfiles()">
+                            <i class="fas fa-refresh"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="platformFilter">Platform:</label>
+                        <select id="platformFilter" onchange="profileManager.filterProfiles()">
+                            <option value="">All Platforms</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="snapchat">Snapchat</option>
+                            <option value="pinterest">Pinterest</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">Status:</label>
+                        <select id="statusFilter" onchange="profileManager.filterProfiles()">
+                            <option value="">All Status</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="searchFilter">Search:</label>
+                        <input type="text" id="searchFilter" placeholder="Search profiles..." oninput="profileManager.filterProfiles()">
+                    </div>
+                </div>
+
+                <div id="profilesList" class="profiles-grid">
+                    <!-- Profiles will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div id="analyticsPage" class="page">
+                <div class="page-header">
+                    <h1>Analytics</h1>
+                    <p>Insights about your social media presence</p>
+                </div>
+                
+                <div class="analytics-content">
+                    <div class="chart-container">
+                        <h2>Profiles by Platform</h2>
+                        <div id="platformChart" class="chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-stats">
+                        <h2>Platform Statistics</h2>
+                        <div id="platformStats" class="platform-stats">
+                            <!-- Platform stats will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                    <p>Manage your account and preferences</p>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h2>Account Information</h2>
+                        <div id="accountInfo">
+                            <!-- Account info will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h2>API Information</h2>
+                        <div class="api-info">
+                            <p><strong>API Base URL:</strong> <code id="apiBaseUrl"></code></p>
+                            <p><strong>API Status:</strong> <span id="apiStatus">Checking...</span></p>
+                            <button class="btn btn-outline" onclick="settingsManager.checkApiHealth()">
+                                <i class="fas fa-heartbeat"></i>
+                                Check API Health
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Profile Modal -->
+            <div id="profileModal" class="modal">
+                <div class="modal-content large">
+                    <div class="modal-header">
+                        <h2 id="profileModalTitle">Add New Profile</h2>
+                        <button class="modal-close" onclick="profileManager.hideProfileModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profilePlatform">Platform *</label>
+                                    <select id="profilePlatform" name="platform" required>
+                                        <option value="">Select Platform</option>
+                                        <option value="twitter">Twitter</option>
+                                        <option value="facebook">Facebook</option>
+                                        <option value="instagram">Instagram</option>
+                                        <option value="linkedin">LinkedIn</option>
+                                        <option value="youtube">YouTube</option>
+                                        <option value="tiktok">TikTok</option>
+                                        <option value="snapchat">Snapchat</option>
+                                        <option value="pinterest">Pinterest</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileUsername">Username *</label>
+                                    <input type="text" id="profileUsername" name="username" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileDisplayName">Display Name *</label>
+                                    <input type="text" id="profileDisplayName" name="display_name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileUrl">Profile URL</label>
+                                    <input type="url" id="profileUrl" name="profile_url">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="profileAvatarUrl">Avatar URL</label>
+                                <input type="url" id="profileAvatarUrl" name="avatar_url">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="profileBio">Bio</label>
+                                <textarea id="profileBio" name="bio" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="profileActive" name="is_active" checked>
+                                    Active Profile
+                                </label>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Save Profile
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="profileManager.hideProfileModal()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading...</p>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profiles.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

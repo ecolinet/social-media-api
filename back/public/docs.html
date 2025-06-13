@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            margin:0;
+            background: #fafafa;
+        }
+        .swagger-ui .topbar {
+            background-color: #007bff;
+        }
+        .swagger-ui .topbar .download-url-wrapper .select-label {
+            color: #fff;
+        }
+        .swagger-ui .topbar .download-url-wrapper input[type=text] {
+            border: 2px solid #fff;
+        }
+        .custom-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .custom-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .custom-header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .links-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .links-section a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .links-section a:hover {
+            background: #0056b3;
+        }
+        #swagger-ui {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-header">
+        <h1>🔗 Social Media Profiles API</h1>
+        <p>OAuth 2 authenticated API for managing social media profiles</p>
+    </div>
+    
+    <div class="links-section">
+        <a href="/demo.html" target="_blank">🎮 Interactive Demo</a>
+        <a href="/api/openapi.yaml" target="_blank">📄 OpenAPI YAML</a>
+        <a href="/api/openapi.json" target="_blank">📄 OpenAPI JSON</a>
+        <a href="https://github.com/your-repo/social-media-api" target="_blank">📚 GitHub Repository</a>
+    </div>
+
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            // Get the current base URL
+            const baseUrl = window.location.origin;
+            
+            // Build the Swagger UI
+            const ui = SwaggerUIBundle({
+                url: baseUrl + '/api/openapi.yaml',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                tryItOutEnabled: true,
+                requestInterceptor: function(request) {
+                    // Add any custom headers or modifications here
+                    return request;
+                },
+                responseInterceptor: function(response) {
+                    // Handle responses here
+                    return response;
+                },
+                onComplete: function() {
+                    console.log('Swagger UI loaded successfully');
+                },
+                onFailure: function(error) {
+                    console.error('Failed to load Swagger UI:', error);
+                },
+                docExpansion: "list",
+                apisSorter: "alpha",
+                operationsSorter: "alpha",
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                validatorUrl: null, // Disable validator
+                persistAuthorization: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                defaultModelsExpandDepth: 2,
+                defaultModelExpandDepth: 2,
+                displayRequestDuration: true,
+                filter: true,
+                syntaxHighlight: {
+                    activated: true,
+                    theme: "agate"
+                }
+            });
+
+            // Add custom styling after UI loads
+            setTimeout(function() {
+                // Hide the top bar if needed
+                const topbar = document.querySelector('.swagger-ui .topbar');
+                if (topbar) {
+                    topbar.style.display = 'none';
+                }
+                
+                // Add demo credentials info
+                const infoSection = document.querySelector('.swagger-ui .info');
+                if (infoSection) {
+                    const demoInfo = document.createElement('div');
+                    demoInfo.innerHTML = `
+                        <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 5px; padding: 15px; margin: 20px 0;">
+                            <h4 style="margin: 0 0 10px 0; color: #0066cc;">🔑 Demo Credentials</h4>
+                            <p style="margin: 5px 0;"><strong>Email:</strong> demo@example.com</p>
+                            <p style="margin: 5px 0;"><strong>Password:</strong> password123</p>
+                            <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #666;">
+                                Use these credentials to test the authentication endpoints and get an access token.
+                            </p>
+                        </div>
+                    `;
+                    infoSection.appendChild(demoInfo);
+                }
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
