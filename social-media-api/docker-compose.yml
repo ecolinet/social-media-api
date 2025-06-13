@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: social-media-api
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8080
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      - CACHE_DRIVER=file
+      - SESSION_DRIVER=file
+      - QUEUE_CONNECTION=database
+      - PASSPORT_PRIVATE_KEY_PATH=/var/www/html/storage/oauth-private.key
+      - PASSPORT_PUBLIC_KEY_PATH=/var/www/html/storage/oauth-public.key
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./database:/var/www/html/database
+    networks:
+      - social-media-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: MySQL database (uncomment if you prefer MySQL over SQLite)
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: social-media-mysql
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_DATABASE: social_media_api
+  #     MYSQL_ROOT_PASSWORD: root_password
+  #     MYSQL_USER: laravel
+  #     MYSQL_PASSWORD: laravel_password
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   networks:
+  #     - social-media-network
+
+  # Optional: Redis for caching and sessions (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: social-media-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - social-media-network
+
+networks:
+  social-media-network:
+    driver: bridge
+
+# volumes:
+#   mysql_data:
+#     driver: local
